@@ -1,8 +1,11 @@
 package org.example;
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class Main {
 
@@ -54,6 +57,21 @@ public class Main {
 
 
     private static Image createIcon() {
+        try (InputStream in = Main.class.getResourceAsStream("/icon.png")) {
+            if (in == null) {
+                System.out.println("icon.png not found, using fallback.");
+                return createFallbackIcon();
+            }
+            BufferedImage original = ImageIO.read(in);
+            Dimension size = SystemTray.getSystemTray().getTrayIconSize();
+            return original.getScaledInstance(size.width, size.height, Image.SCALE_SMOOTH);
+        } catch (IOException e) {
+            System.out.println("Could not load icon: " + e.getMessage());
+            return createFallbackIcon();
+        }
+    }
+
+    private static Image createFallbackIcon() {
         BufferedImage img = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = img.createGraphics();
         g.setColor(Color.BLUE);
