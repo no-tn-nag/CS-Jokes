@@ -49,10 +49,18 @@ public class Main {
     }
 
     private static void showJoke() {
-        JOptionPane.showMessageDialog(
-                null,
-                jokes.getJoke()
-        );
+        JOptionPane pane = new JOptionPane(jokes.getJoke(), JOptionPane.INFORMATION_MESSAGE);
+        JDialog dialog = pane.createDialog("Computer Science Jokes");
+        dialog.setAlwaysOnTop(true);
+
+        // On macOS: bring our app to the front, like clicking it in the Dock
+        if (Desktop.isDesktopSupported()
+                && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
+            Desktop.getDesktop().requestForeground(true);
+        }
+
+        dialog.setVisible(true);   // blocks until OK is clicked
+        dialog.dispose();
     }
 
 
