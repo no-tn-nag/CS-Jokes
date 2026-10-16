@@ -1,0 +1,41 @@
+name: Build macOS app
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+
+      - name: Build JAR
+        run: mvn -B package
+
+      - name: Package as Mac app
+        run: |
+          mkdir dist-input
+          JAR=$(ls target/*.jar | head -1)
+          cp "$JAR" dist-input/
+          jpackage --type dmg \
+            --name CSJokes \
+            --app-version "${GITHUB_REF_NAME#v}" \
+            --input dist-input \
+            --main-jar "$(basename "$JAR")" \
+            --main-class org.example.Main \
+            --java-options "-Dapple.awt.UIElement=true" \
+            --dest out
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: out/*.dmg
