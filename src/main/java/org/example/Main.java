@@ -57,7 +57,7 @@ public class Main {
 
 
     private static Image createIcon() {
-        try (InputStream in = Main.class.getResourceAsStream("/icon.png")) {
+        try (InputStream in = Main.class.getResourceAsStream("/icon2.png")) {
             if (in == null) {
                 System.out.println("icon.png not found, using fallback.");
                 return createFallbackIcon();
