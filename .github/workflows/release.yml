@@ -23,12 +23,21 @@ jobs:
 
       - name: Package as Mac app
         run: |
+          # Turn icon.png into a macOS .icns icon
+          mkdir icon.iconset
+          for size in 16 32 128 256 512; do
+            sips -z $size $size src/main/resources/icon.png --out icon.iconset/icon_${size}x${size}.png
+            sips -z $((size*2)) $((size*2)) src/main/resources/icon.png --out icon.iconset/icon_${size}x${size}@2x.png
+          done
+          iconutil -c icns icon.iconset -o icon.icns
+
           mkdir dist-input
           JAR=$(ls target/*.jar | head -1)
           cp "$JAR" dist-input/
           jpackage --type dmg \
             --name CSJokes \
             --app-version "${GITHUB_REF_NAME#v}" \
+            --icon icon.icns \
             --input dist-input \
             --main-jar "$(basename "$JAR")" \
             --main-class org.example.Main \
