@@ -8,7 +8,7 @@ public class Main {
 
     static Jokes jokes = new Jokes();
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
         SwingUtilities.invokeLater(Main::createTray);
     }
 
@@ -18,6 +18,10 @@ public class Main {
             return;
         }
         PopupMenu menu = new PopupMenu();
+        MenuItem jokeItem = new MenuItem("Tell me a joke");
+        jokeItem.addActionListener(e -> showJoke());
+        menu.add(jokeItem);
+        menu.addSeparator();
         MenuItem quitItem = new MenuItem("Quit");
         quitItem.addActionListener(e -> System.exit(0));
         menu.add(quitItem);

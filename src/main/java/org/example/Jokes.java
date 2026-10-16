@@ -15,7 +15,7 @@ public class Jokes {
     };
 
     public String getJoke() {
-        return this.jokes[++counter % this.jokes.length];
+        return this.jokes[counter++ % this.jokes.length];
 
     }
 }
