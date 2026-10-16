@@ -11,7 +11,7 @@ public class Jokes {
             "What’s the difference between a delicious dinner and a slow computer? \n One’s a rack of lamb and the other’s a lack of RAM.",
             "You know what screams “I’m insecure”? \n http://",
             "Why do software developers use dark themes?\n Because bugs are attracted to the light.",
-            "My team had a debate on what the best looping variable name is\n i won"
+            "My team had a debate on what the best looping variable name is. \n i won"
     };
 
     public String getJoke() {
