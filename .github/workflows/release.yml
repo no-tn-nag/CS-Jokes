@@ -32,7 +32,7 @@ jobs:
           iconutil -c icns icon.iconset -o icon.icns
 
           mkdir dist-input
-          JAR=$(ls target/*.jar | head -1)
+          JAR=$(ls target/*.jar | grep -v original- | head -1)
           cp "$JAR" dist-input/
           jpackage --type dmg \
             --name CSJokes \
