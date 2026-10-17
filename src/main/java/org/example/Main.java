@@ -10,6 +10,7 @@ import java.io.InputStream;
 public class Main {
 
     static Jokes jokes = new Jokes();
+    private static final JokeApiClient apiClient = new JokeApiClient();
     private static TrayIcon trayIcon;
 
     private static final int MINUTES = 60;
@@ -92,7 +93,7 @@ public class Main {
     }
 
     private static void scheduleNextJoke() {
-        Timer timer = new Timer(MINUTES, e -> {
+        Timer timer = new Timer(MINUTES * 60_000, e -> {
             showJokeNotification();
             scheduleNextJoke();
         });
@@ -101,12 +102,19 @@ public class Main {
     }
 
     private static void showJokeNotification() {
-        String title = "Computer Science Jokes";
-        String body = jokes.getJoke();
+        apiClient.fetchJoke()
+                .exceptionally(ex -> {
+                    System.out.println("API failed, using local joke: " + ex.getMessage());
+                    return Joke.fromText(jokes.getJoke());
+                })
+                .thenAccept(joke -> SwingUtilities.invokeLater(() -> notify(joke)));
+    }
+
+    private static void notify(Joke joke) {
         if (IS_MAC) {
-            notifyMac(title, body);
+            notifyMac(joke.title(), joke.body());
         } else {
-            trayIcon.displayMessage(title, body, TrayIcon.MessageType.NONE);
+            trayIcon.displayMessage(joke.title(), joke.body(), TrayIcon.MessageType.NONE);
         }
     }
 
