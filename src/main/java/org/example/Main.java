@@ -10,6 +10,10 @@ import java.io.InputStream;
 public class Main {
 
     static Jokes jokes = new Jokes();
+    private static TrayIcon trayIcon;
+
+    private static final int MINUTES = 60;
+    private static final boolean IS_MAC = System.getProperty("os.name").toLowerCase().contains("mac");
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(Main::createTray);
@@ -22,14 +26,14 @@ public class Main {
         }
         PopupMenu menu = new PopupMenu();
         MenuItem jokeItem = new MenuItem("Tell me a joke");
-        jokeItem.addActionListener(e -> showJoke());
+        jokeItem.addActionListener(e -> showJokeNotification());
         menu.add(jokeItem);
         menu.addSeparator();
         MenuItem quitItem = new MenuItem("Quit");
         quitItem.addActionListener(e -> System.exit(0));
         menu.add(quitItem);
 
-        TrayIcon trayIcon = new TrayIcon(createIcon(), "Computer Science Jokes", menu);
+        trayIcon = new TrayIcon(createIcon(), "Computer Science Jokes", menu);
         trayIcon.setImageAutoSize(true);
         trayIcon.addMouseListener(new MouseAdapter() {
             @Override
@@ -40,12 +44,12 @@ public class Main {
             }
         });
 
-        // 3. Put it in the system tray
         try {
             SystemTray.getSystemTray().add(trayIcon);
         } catch (AWTException e) {
             System.out.println("Could not add tray icon: " + e.getMessage());
         }
+        scheduleNextJoke();
     }
 
     private static void showJoke() {
@@ -53,13 +57,12 @@ public class Main {
         JDialog dialog = pane.createDialog("Computer Science Jokes");
         dialog.setAlwaysOnTop(true);
 
-        // On macOS: bring our app to the front, like clicking it in the Dock
         if (Desktop.isDesktopSupported()
                 && Desktop.getDesktop().isSupported(Desktop.Action.APP_REQUEST_FOREGROUND)) {
             Desktop.getDesktop().requestForeground(true);
         }
 
-        dialog.setVisible(true);   // blocks until OK is clicked
+        dialog.setVisible(true);
         dialog.dispose();
     }
 
@@ -86,5 +89,38 @@ public class Main {
         g.fillOval(0, 0, 16, 16);
         g.dispose();
         return img;
+    }
+
+    private static void scheduleNextJoke() {
+        Timer timer = new Timer(MINUTES, e -> {
+            showJokeNotification();
+            scheduleNextJoke();
+        });
+        timer.setRepeats(false);
+        timer.start();
+    }
+
+    private static void showJokeNotification() {
+        String title = "Computer Science Jokes";
+        String body = jokes.getJoke();
+        if (IS_MAC) {
+            notifyMac(title, body);
+        } else {
+            trayIcon.displayMessage(title, body, TrayIcon.MessageType.NONE);
+        }
+    }
+
+    private static void notifyMac(String title, String body) {
+        String script = "display notification \"" + escape(body) + "\"" + " with title \"" + escape(title) + "\"";
+        try {
+            new ProcessBuilder("osascript", "-e", script).start();
+        } catch (IOException e) {
+            System.out.println("Could not show notification: " + e.getMessage());
+        }
+    }
+
+
+    private static String escape(String s) {
+        return s.replace("\\", "\\\\").replace("\"", "\\\"");
     }
 }
